@@ -214,3 +214,103 @@ def orders():
     </html>
     """
     return html
+@app.route("/checkout", methods=["GET", "POST"])
+def checkout():
+    cart = session.get("cart", [])
+    if not cart:
+        return redirect("/")
+    conn = sqlite3.connect("pharmacy.db")
+    conn.row_factory = sqlite3.Row
+    total = 0
+    for product_id in cart:
+        product = conn.execute(
+            "SELECT * FROM products WHERE id = ?",
+            (product_id,)
+        ).fetchone()
+        if product:
+            total += product["price"]
+    if request.method == "POST":
+        customer = request.form["customer"]
+        address = request.form["address"]
+        conn.execute(
+            """
+            INSERT INTO orders
+            (customer, address, total)
+            VALUES (?, ?, ?)
+            """,
+            (customer, address, total)
+        )
+        for product_id in cart:
+            conn.execute(
+                """
+                UPDATE products
+                SET stock = stock - 1
+                WHERE id = ? AND stock > 0
+                """,
+                (product_id,)
+            )
+        conn.commit()
+        conn.close()
+        session["cart"] = []
+        return f"""
+        <h1>Order Placed Successfully!</h1>
+        <h2>Thank you, {customer}</h2>
+        <p>Order Total: ₹{total:.2f}</p>
+        <a href="/">Back to Home</a>
+        <br><br>
+        <a href="/orders">View Orders</a>
+        """
+    conn.close()
+    return f"""
+    <html>
+    <body>
+        <h1>Checkout</h1>
+        <h2>Total Amount: ₹{total:.2f}</h2>
+        <form method="POST">
+            <label>Customer Name</label><br>
+            <input type="text" name="customer" required>
+            <br><br>
+            <label>Delivery Address</label><br>
+            <textarea name="address" required></textarea>
+            <br><br>
+            <button type="submit">
+                Place Order
+            </button>
+        </form>
+    </body>
+    </html>
+    """
+@app.route("/orders")
+def orders():
+    conn = sqlite3.connect("pharmacy.db")
+    conn.row_factory = sqlite3.Row
+    orders = conn.execute(
+        "SELECT * FROM orders ORDER BY id DESC"
+    ).fetchall()
+    conn.close()
+    html = """
+    <html>
+    <body>
+        <h1>Order History</h1>
+    """
+    if orders:
+        for order in orders:
+            html += f"""
+            <div>
+                <h2>Order #{order["id"]}</h2>
+                <p>Customer: {order["customer"]}</p>
+                <p>Address: {order["address"]}</p>
+                <p>Total: ₹{order["total"]:.2f}</p>
+                <hr>
+            </div>
+            """
+    else:
+        html += """
+        <p>No orders have been placed yet.</p>
+        """
+    html += """
+        <a href="/">Back to Home</a>
+    </body>
+    </html>
+    """
+    return html
