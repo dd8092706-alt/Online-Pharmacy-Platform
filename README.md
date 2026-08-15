@@ -100,3 +100,11 @@ def clear():
         text="Back",
         command=login_screen
     ).pack()
+    def customer_screen():
+    clear()
+    title("Customer Dashboard")
+    tk.Label(
+        root,
+        text="Welcome " + current_user["name"],
+        font=("Arial", 14)
+    ).pack()
