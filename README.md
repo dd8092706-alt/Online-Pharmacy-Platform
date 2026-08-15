@@ -132,3 +132,10 @@ def clear():
         width=25,
         command=login_screen
     ).pack(pady=8)
+    def medicine_screen():
+    clear()
+    title("Available Medicines")
+    search = tk.Entry(root, width=30)
+    search.pack()
+    frame = tk.Frame(root)
+    frame.pack(pady=15)
