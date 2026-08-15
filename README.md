@@ -217,3 +217,18 @@ def clear():
                 cart
             ):
                 cart.clear()
+                messagebox.showinfo(
+                    "Order",
+                    "Order placed successfully"
+                )
+                customer_screen()
+            else:
+                messagebox.showerror(
+                    "Order",
+                    "Insufficient stock"
+                )
+        tk.Button(
+            root,
+            text="Place Order",
+            command=checkout
+        ).pack()
