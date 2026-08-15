@@ -182,3 +182,17 @@ def clear():
         "Cart",
         "Medicine added to cart"
     )
+    def cart_screen():
+    clear()
+    title("Shopping Cart")
+    if not cart:
+        tk.Label(
+            root,
+            text="Cart is empty"
+        ).pack()
+    else:
+        total = 0
+        for medicine_id, quantity in cart.items():
+            item = medicines()
+            for medicine in item:
+                if medicine["id"] == medicine_id:
