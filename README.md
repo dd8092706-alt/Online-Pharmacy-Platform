@@ -139,3 +139,15 @@ def clear():
     search.pack()
     frame = tk.Frame(root)
     frame.pack(pady=15)
+    def load():
+        for widget in frame.winfo_children():
+            widget.destroy()
+        for medicine in medicines(search.get()):
+            text = (
+                f'{medicine["name"]} | '
+                f'{medicine["category"]} | '
+                f'₹{medicine["price"]} | '
+                f'Stock: {medicine["stock"]}'
+            )
+            row = tk.Frame(frame)
+            row.pack(pady=4)
