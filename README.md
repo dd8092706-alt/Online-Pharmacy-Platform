@@ -11,3 +11,9 @@ from pharmacy import (
     customer_orders,
     all_orders
 )
+setup_database()
+root = tk.Tk()
+root.title("Online Pharmacy Platform")
+root.geometry("900x600")
+current_user = None
+cart = {}
