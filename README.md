@@ -20,3 +20,9 @@ cart = {}
 def clear():
     for widget in root.winfo_children():
         widget.destroy()
+        def title(text):
+    tk.Label(
+        root,
+        text=text,
+        font=("Arial", 24, "bold")
+    ).pack(pady=20)
