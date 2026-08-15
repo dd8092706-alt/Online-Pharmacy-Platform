@@ -108,3 +108,15 @@ def clear():
         text="Welcome " + current_user["name"],
         font=("Arial", 14)
     ).pack()
+    tk.Button(
+        root,
+        text="Browse Medicines",
+        width=25,
+        command=medicine_screen
+    ).pack(pady=8)
+    tk.Button(
+        root,
+        text="View Cart",
+        width=25,
+        command=cart_screen
+    ).pack(pady=8)
