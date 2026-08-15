@@ -64,3 +64,13 @@ def clear():
         width=20,
         command=register_screen
     ).pack()
+    def register_screen():
+    clear()
+    title("Create Customer Account")
+    labels = ["Name", "Email", "Password"]
+    entries = []
+    for text in labels:
+        tk.Label(root, text=text).pack()
+        entry = tk.Entry(root, width=35)
+        entry.pack(pady=5)
+        entries.append(entry)
