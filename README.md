@@ -137,3 +137,129 @@ def medicine_screen():
             "Back",
             on_click=customer_screen
         )
+        def add_cart(medicine_id):
+    cart[medicine_id] = cart.get(
+        medicine_id,
+        0
+    ) + 1
+    ui.notify("Medicine added to cart")
+def cart_screen():
+    clear_page()
+    with page:
+        ui.label("Shopping Cart").classes(
+            "text-3xl font-bold"
+        )
+        if not cart:
+            ui.label("Cart is empty")
+        else:
+            total = 0
+            for medicine_id, quantity in cart.items():
+                for medicine in medicines():
+                    if medicine["id"] == medicine_id:
+                        amount = (
+                            medicine["price"] *
+                            quantity
+                        )
+                        total += amount
+                        ui.label(
+                            f'{medicine["name"]} x '
+                            f'{quantity} = ₹{amount}'
+                        )
+            ui.label(
+                f"Total: ₹{total}"
+            ).classes("text-xl font-bold")
+            def checkout():
+                if place_order(
+                    current_user["id"],
+                    cart
+                ):
+                    cart.clear()
+                    ui.notify(
+                        "Order placed successfully"
+                    )
+                    customer_screen()
+                else:
+                    ui.notify(
+                        "Insufficient stock",
+                        type="negative"
+                    )
+            ui.button(
+                "Place Order",
+                on_click=checkout
+            )
+        ui.button(
+            "Back",
+            on_click=customer_screen
+        )
+def orders_screen():
+    clear_page()
+    with page:
+        ui.label("My Orders").classes(
+            "text-3xl font-bold"
+        )
+        orders = customer_orders(
+            current_user["id"]
+        )
+        if not orders:
+            ui.label("No orders found")
+        for order in orders:
+            ui.label(
+                f'Order {order["id"]} | '
+                f'Total: ₹{order["total"]} | '
+                f'Status: {order["status"]}'
+            )
+        ui.button(
+            "Back",
+            on_click=customer_screen
+        )
+def admin_screen():
+    clear_page()
+    with page:
+        ui.label("Admin Dashboard").classes(
+            "text-3xl font-bold"
+        )
+        ui.button(
+            "Manage Medicines",
+            on_click=admin_medicines
+        )
+        ui.button(
+            "View Customer Orders",
+            on_click=admin_orders
+        )
+        ui.button(
+            "Logout",
+            on_click=login_screen
+        )
+def admin_medicines():
+    clear_page()
+    with page:
+        ui.label("Medicine Management").classes(
+            "text-3xl font-bold"
+        )
+        name = ui.input("Medicine Name")
+        category = ui.input("Category")
+        price = ui.number("Price")
+        stock = ui.number("Stock")
+        def save():
+            add_medicine(
+                name.value,
+                category.value,
+                price.value,
+                stock.value
+            )
+            ui.notify("Medicine added")
+            admin_medicines()
+        ui.button(
+            "Add Medicine",
+            on_click=save
+        )
+        for medicine in medicines():
+            ui.label(
+                f'{medicine["id"]}. '
+                f'{medicine["name"]} '
+                f'(Stock: {medicine["stock"]})'
+            )
+        ui.button(
+            "Back",
+            on_click=admin_screen
+        )
