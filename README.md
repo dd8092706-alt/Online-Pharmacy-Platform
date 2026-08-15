@@ -253,3 +253,94 @@ def orders_screen():
             text=text,
             font=("Arial", 12)
         ).pack(pady=5)
+        tk.Button(
+        root,
+        text="Back",
+        command=customer_screen
+    ).pack(pady=15)
+def admin_screen():
+    clear()
+    title("Admin Dashboard")
+    tk.Button(
+        root,
+        text="Manage Medicines",
+        width=25,
+        command=admin_medicines
+    ).pack(pady=10)
+    tk.Button(
+        root,
+        text="View Customer Orders",
+        width=25,
+        command=admin_orders
+    ).pack(pady=10)
+    tk.Button(
+        root,
+        text="Logout",
+        width=25,
+        command=login_screen
+    ).pack(pady=10)
+def admin_medicines():
+    clear()
+    title("Medicine Management")
+    fields = []
+    for text in [
+        "Medicine Name",
+        "Category",
+        "Price",
+        "Stock"
+    ]:
+        tk.Label(root, text=text).pack()
+        entry = tk.Entry(root)
+        entry.pack(pady=3)
+        fields.append(entry)
+    def save():
+        add_medicine(
+            fields[0].get(),
+            fields[1].get(),
+            float(fields[2].get()),
+            int(fields[3].get())
+        )
+        messagebox.showinfo(
+            "Admin",
+            "Medicine added"
+        )
+        admin_medicines()
+    tk.Button(
+        root,
+        text="Add Medicine",
+        command=save
+    ).pack(pady=10)
+    for medicine in medicines():
+        tk.Label(
+            root,
+            text=f'{medicine["id"]}. '
+                 f'{medicine["name"]} '
+                 f'(Stock: {medicine["stock"]})'
+        ).pack()
+    tk.Button(
+        root,
+        text="Back",
+        command=admin_screen
+    ).pack(pady=15)
+def admin_orders():
+    clear()
+    title("Customer Orders")
+    for order in all_orders():
+        text = (
+            f'Order {order["id"]} | '
+            f'{order["name"]} | '
+            f'{order["email"]} | '
+            f'₹{order["total"]} | '
+            f'{order["status"]}'
+        )
+        tk.Label(
+            root,
+            text=text
+        ).pack(pady=5)
+    tk.Button(
+        root,
+        text="Back",
+        command=admin_screen
+    ).pack(pady=15)
+login_screen()
+root.mainloop()
