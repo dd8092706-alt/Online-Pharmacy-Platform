@@ -52,3 +52,15 @@ def clear():
                 "Login",
                 "Invalid email or password"
             )
+            tk.Button(
+        root,
+        text="Login",
+        width=20,
+        command=do_login
+    ).pack(pady=10)
+    tk.Button(
+        root,
+        text="Create Account",
+        width=20,
+        command=register_screen
+    ).pack()
