@@ -35,3 +35,20 @@ def clear():
     tk.Label(root, text="Password").pack()
     password = tk.Entry(root, show="*", width=35)
     password.pack(pady=5)
+    def do_login():
+        global current_user
+        user = login(
+            email.get(),
+            password.get()
+        )
+        if user:
+            current_user = user
+            if user["role"] == "admin":
+                admin_screen()
+            else:
+                customer_screen()
+        else:
+            messagebox.showerror(
+                "Login",
+                "Invalid email or password"
+            )
