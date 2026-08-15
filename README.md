@@ -206,3 +206,14 @@ def clear():
                              f'x {quantity}  '
                              f'= ₹{amount}'
                     ).pack(pady=5)
+                    tk.Label(
+            root,
+            text=f"Total: ₹{total}",
+            font=("Arial", 16, "bold")
+        ).pack(pady=15)
+        def checkout():
+            if place_order(
+                current_user["id"],
+                cart
+            ):
+                cart.clear()
