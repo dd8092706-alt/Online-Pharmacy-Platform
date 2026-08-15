@@ -151,3 +151,15 @@ def clear():
             )
             row = tk.Frame(frame)
             row.pack(pady=4)
+            tk.Label(
+                row,
+                text=text,
+                width=60,
+                anchor="w"
+            ).pack(side="left")
+            tk.Button(
+                row,
+                text="Add",
+                command=lambda m=medicine:
+                    add_cart(m["id"])
+            ).pack(side="left")
