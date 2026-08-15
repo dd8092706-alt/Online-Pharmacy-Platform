@@ -17,3 +17,6 @@ root.title("Online Pharmacy Platform")
 root.geometry("900x600")
 current_user = None
 cart = {}
+def clear():
+    for widget in root.winfo_children():
+        widget.destroy()
