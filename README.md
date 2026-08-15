@@ -120,3 +120,15 @@ def clear():
         width=25,
         command=cart_screen
     ).pack(pady=8)
+    tk.Button(
+        root,
+        text="My Orders",
+        width=25,
+        command=orders_screen
+    ).pack(pady=8)
+    tk.Button(
+        root,
+        text="Logout",
+        width=25,
+        command=login_screen
+    ).pack(pady=8)
