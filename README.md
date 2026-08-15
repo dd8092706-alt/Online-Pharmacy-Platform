@@ -174,3 +174,11 @@ def clear():
         text="Back",
         command=customer_screen
     ).pack(pady=10)
+    def add_cart(medicine_id):
+    cart[medicine_id] = cart.get(
+        medicine_id, 0
+    ) + 1
+    messagebox.showinfo(
+        "Cart",
+        "Medicine added to cart"
+    )
