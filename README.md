@@ -232,3 +232,24 @@ def clear():
             text="Place Order",
             command=checkout
         ).pack()
+        tk.Button(
+        root,
+        text="Back",
+        command=customer_screen
+    ).pack(pady=15)
+def orders_screen():
+    clear()
+    title("My Orders")
+    for order in customer_orders(
+        current_user["id"]
+    ):
+        text = (
+            f'Order {order["id"]}   '
+            f'Total: ₹{order["total"]}   '
+            f'Status: {order["status"]}'
+        )
+        tk.Label(
+            root,
+            text=text,
+            font=("Arial", 12)
+        ).pack(pady=5)
