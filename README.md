@@ -163,3 +163,14 @@ def clear():
                 command=lambda m=medicine:
                     add_cart(m["id"])
             ).pack(side="left")
+            tk.Button(
+        root,
+        text="Search",
+        command=load
+    ).pack(pady=5)
+    load()
+    tk.Button(
+        root,
+        text="Back",
+        command=customer_screen
+    ).pack(pady=10)
