@@ -263,3 +263,4 @@ def admin_medicines():
             "Back",
             on_click=admin_screen
         )
+    
