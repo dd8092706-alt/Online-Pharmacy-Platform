@@ -196,3 +196,13 @@ def clear():
             item = medicines()
             for medicine in item:
                 if medicine["id"] == medicine_id:
+                amount = (
+                        medicine["price"] * quantity
+                    )
+                    total += amount
+                    tk.Label(
+                        root,
+                        text=f'{medicine["name"]}  '
+                             f'x {quantity}  '
+                             f'= ₹{amount}'
+                    ).pack(pady=5)
