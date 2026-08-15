@@ -90,3 +90,13 @@ def clear():
                 "Registration",
                 "Email already exists"
             )
+            tk.Button(
+        root,
+        text="Register",
+        command=save
+    ).pack(pady=10)
+    tk.Button(
+        root,
+        text="Back",
+        command=login_screen
+    ).pack()
