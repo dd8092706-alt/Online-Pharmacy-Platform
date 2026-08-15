@@ -1,4 +1,5 @@
 #Online Pharmacy Platform
+#main.py
 from nicegui import ui
 from database import setup_database
 from login import register, login
