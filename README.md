@@ -26,3 +26,12 @@ def clear():
         text=text,
         font=("Arial", 24, "bold")
     ).pack(pady=20)
+    def login_screen():
+    clear()
+    title("Online Pharmacy")
+    tk.Label(root, text="Email").pack()
+    email = tk.Entry(root, width=35)
+    email.pack(pady=5)
+    tk.Label(root, text="Password").pack()
+    password = tk.Entry(root, show="*", width=35)
+    password.pack(pady=5)
