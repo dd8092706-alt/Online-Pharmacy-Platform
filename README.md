@@ -74,3 +74,19 @@ def clear():
         entry = tk.Entry(root, width=35)
         entry.pack(pady=5)
         entries.append(entry)
+        def save():
+        if register(
+            entries[0].get(),
+            entries[1].get(),
+            entries[2].get()
+        ):
+            messagebox.showinfo(
+                "Registration",
+                "Account created successfully"
+            )
+            login_screen()
+        else:
+            messagebox.showerror(
+                "Registration",
+                "Email already exists"
+            )
