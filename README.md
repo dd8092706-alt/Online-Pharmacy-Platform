@@ -298,4 +298,22 @@ def connect():
 def setup_database():
     db = connect()
     cur = db.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            role TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS medicines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            category TEXT,
+            price REAL,
+            stock INTEGER
+        )
+    """)
 
