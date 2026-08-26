@@ -291,3 +291,5 @@ ui.run(
     port=8080,
     title="Online Pharmacy Platform"
 ) 
+#database.py
+
