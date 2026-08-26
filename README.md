@@ -292,4 +292,10 @@ ui.run(
     title="Online Pharmacy Platform"
 ) 
 #database.py
+import sqlite3
+def connect():
+    return sqlite3.connect("pharmacy.db")
+def setup_database():
+    db = connect()
+    cur = db.cursor()
 
