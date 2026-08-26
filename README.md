@@ -332,4 +332,15 @@ def setup_database():
             quantity INTEGER
         )
     """)
+    cur.execute(
+        "SELECT * FROM users WHERE email=?",
+        ("admin@gmail.com",)
+    )
+    if not cur.fetchone():
+        cur.execute(
+            "INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
+            ("Admin", "admin@gmail.com", "admin123", "admin")
+        )
+    db.commit()
+    db.close()
 
