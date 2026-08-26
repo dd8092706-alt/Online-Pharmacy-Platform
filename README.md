@@ -367,4 +367,12 @@ def register(name, email, password):
     )
     row = cur.fetchone()
     db.close()
+    if row:
+        return {
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "role": row[3]
+        }
+    return None
 
