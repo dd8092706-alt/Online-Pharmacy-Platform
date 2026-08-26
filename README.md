@@ -316,4 +316,20 @@ def setup_database():
             stock INTEGER
         )
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            total REAL,
+            status TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER,
+            medicine_id INTEGER,
+            quantity INTEGER
+        )
+    """)
 
