@@ -103,3 +103,36 @@ def login_screen():
             "Logout",
             on_click=login_screen
         )
+        def medicine_screen():
+    clear_page()
+    with page:
+        ui.label("Available Medicines").classes(
+            "text-3xl font-bold"
+        )
+        search = ui.input("Search Medicine")
+        medicines_area = ui.column()
+        def load_medicines():
+            medicines_area.clear()
+            with medicines_area:
+                for medicine in medicines(search.value or ""):
+                    with ui.row().classes("items-center"):
+                        ui.label(
+                            f'{medicine["name"]} | '
+                            f'{medicine["category"]} | '
+                            f'₹{medicine["price"]} | '
+                            f'Stock: {medicine["stock"]}'
+                        )
+                        ui.button(
+                            "Add",
+                            on_click=lambda m=medicine:
+                            add_cart(m["id"])
+                        )
+        ui.button(
+            "Search",
+            on_click=load_medicines
+        )
+        load_medicines()
+        ui.button(
+            "Back",
+            on_click=customer_screen
+        )
