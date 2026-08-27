@@ -136,3 +136,31 @@ def login_screen():
             "Back",
             on_click=customer_screen
         )
+        def add_cart(medicine_id):
+    cart[medicine_id] = cart.get(
+        medicine_id,
+        0
+    ) + 1
+    ui.notify("Medicine added to cart")
+def cart_screen():
+    clear_page()
+    with page:
+        ui.label("Shopping Cart").classes(
+            "text-3xl font-bold"
+        )
+        if not cart:
+            ui.label("Cart is empty")
+        else:
+            total = 0
+            for medicine_id, quantity in cart.items():
+                for medicine in medicines():
+                    if medicine["id"] == medicine_id:
+                        amount = (
+                            medicine["price"] *
+                            quantity
+                        )
+                        total += amount
+                        ui.label(
+                            f'{medicine["name"]} x '
+                            f'{quantity} = ₹{amount}'
+                        )
