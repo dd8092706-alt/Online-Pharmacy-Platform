@@ -253,3 +253,30 @@ def cart_screen():
             "Back",
             on_click=admin_screen
         )
+        def admin_orders():
+    clear_page()
+    with page:
+        ui.label("Customer Orders").classes(
+            "text-3xl font-bold"
+        )
+        orders = all_orders()
+        if not orders:
+            ui.label("No orders found")
+        for order in orders:
+            ui.label(
+                f'Order {order["id"]} | '
+                f'{order["name"]} | '
+                f'{order["email"]} | '
+                f'₹{order["total"]} | '
+                f'{order["status"]}'
+            )
+        ui.button(
+            "Back",
+            on_click=admin_screen
+        )
+login_screen()
+ui.run(
+    host="127.0.0.1",
+    port=8080,
+    title="Online Pharmacy Platform"
+)
