@@ -1,4 +1,4 @@
-Online Pharmacy Platform
+ONLINE PHARMACY PLATFORM
 PROJECT OVERVIEW
 The Online Pharmacy Platform is a simple pharmacy management and medicine ordering application developed using Python, NiceGUI, and SQLite.
 The platform allows customers to create an account, browse medicines, add medicines to a shopping cart, and place orders. An admin can manage medicines and view customer orders.
