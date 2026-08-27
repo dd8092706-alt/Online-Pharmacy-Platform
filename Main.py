@@ -220,3 +220,36 @@ def cart_screen():
                             f'{medicine["name"]} x '
                             f'{quantity} = ₹{amount}'
                         )
+                        def admin_medicines():
+    clear_page()
+    with page:
+        ui.label("Medicine Management").classes(
+            "text-3xl font-bold"
+        )
+        name = ui.input("Medicine Name")
+        category = ui.input("Category")
+        price = ui.number("Price")
+        stock = ui.number("Stock")
+        def save():
+            add_medicine(
+                name.value,
+                category.value,
+                price.value,
+                stock.value
+            )
+            ui.notify("Medicine added")
+            admin_medicines()
+        ui.button(
+            "Add Medicine",
+            on_click=save
+        )
+        for medicine in medicines():
+            ui.label(
+                f'{medicine["id"]}. '
+                f'{medicine["name"]} '
+                f'(Stock: {medicine["stock"]})'
+            )
+        ui.button(
+            "Back",
+            on_click=admin_screen
+        )
