@@ -78,3 +78,28 @@ def login_screen():
             "Back",
             on_click=login_screen
         )
+        def customer_screen():
+    clear_page()
+    with page:
+        ui.label("Customer Dashboard").classes(
+            "text-3xl font-bold"
+        )
+        ui.label(
+            "Welcome " + current_user["name"]
+        ).classes("text-xl")
+        ui.button(
+            "Browse Medicines",
+            on_click=medicine_screen
+        )
+        ui.button(
+            "View Cart",
+            on_click=cart_screen
+        )
+        ui.button(
+            "My Orders",
+            on_click=orders_screen
+        )
+        ui.button(
+            "Logout",
+            on_click=login_screen
+        )
