@@ -45,3 +45,36 @@ def login_screen():
             "Create Account",
             on_click=register_screen
         )
+        def register_screen():
+    clear_page()
+    with page:
+        ui.label("Create Customer Account").classes(
+            "text-3xl font-bold"
+        )
+        name = ui.input("Name").classes("w-80")
+        email = ui.input("Email").classes("w-80")
+        password = ui.input(
+            "Password",
+            password=True
+        ).classes("w-80")
+        def save():
+            if register(
+                name.value,
+                email.value,
+                password.value
+            ):
+                ui.notify("Account created successfully")
+                login_screen()
+            else:
+                ui.notify(
+                    "Email already exists",
+                    type="negative"
+                )
+        ui.button(
+            "Register",
+            on_click=save
+        )
+        ui.button(
+            "Back",
+            on_click=login_screen
+        )
