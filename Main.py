@@ -14,3 +14,34 @@ cart = {}
 page = ui.column().classes("w-full items-center")
 def clear_page():
     page.clear()
+def login_screen():
+    clear_page()
+    with page:
+        ui.label("Online Pharmacy").classes("text-3xl font-bold")
+        email = ui.input("Email").classes("w-80")
+        password = ui.input("Password", password=True).classes("w-80")
+        def do_login():
+            global current_user
+            user = login(
+                email.value,
+                password.value
+            )
+            if user:
+                current_user = user
+                if user["role"] == "admin":
+                    admin_screen()
+                else:
+                    customer_screen()
+            else:
+                ui.notify(
+                    "Invalid email or password",
+                    type="negative"
+                )
+        ui.button(
+            "Login",
+            on_click=do_login
+        )
+        ui.button(
+            "Create Account",
+            on_click=register_screen
+        )
