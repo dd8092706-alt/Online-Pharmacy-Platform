@@ -1,282 +1,542 @@
 from nicegui import ui
-from database import setup_database
-from login import register, login
-from pharmacy import (
-    medicines,
-    add_medicine,
-    place_order,
-    customer_orders,
-    all_orders
-)
-setup_database()
-current_user = None
-cart = {}
-page = ui.column().classes("w-full items-center")
-def clear_page():
-    page.clear()
-def login_screen():
-    clear_page()
-    with page:
-        ui.label("Online Pharmacy").classes("text-3xl font-bold")
-        email = ui.input("Email").classes("w-80")
-        password = ui.input("Password", password=True).classes("w-80")
-        def do_login():
-            global current_user
-            user = login(
-                email.value,
-                password.value
+import sqlite3
+import hashlib
+DB = "pharmacy.db"
+def db():
+    return sqlite3.connect(DB)
+def setup():
+    con = db()
+    cur = con.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            role TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS medicines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            category TEXT,
+            price REAL,
+            stock INTEGER,
+            image TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            total REAL,
+            status TEXT
+        )
+    """)
+
+    admin = cur.execute(
+        "SELECT id FROM users WHERE email=?",
+        ("admin@pharmacy.com",)
+    ).fetchone()
+    if admin is None:
+        cur.execute(
+            """
+            INSERT INTO users
+            (name,email,password,role)
+            VALUES (?,?,?,?)
+            """,
+            (
+                "Admin",
+                "admin@pharmacy.com",
+                hashlib.sha256("admin123".encode()).hexdigest(),
+                "admin"
             )
-            if user:
-                current_user = user
-                if user["role"] == "admin":
-                    admin_screen()
+        )
+    count = cur.execute(
+        "SELECT COUNT(*) FROM medicines"
+    ).fetchone()[0]
+    if count == 0:
+        products = [
+            (
+                "Paracetamol 500mg",
+                "Pain Relief",
+                25,
+                100,
+                "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae"
+            ),
+            (
+                "Vitamin C",
+                "Vitamins",
+                120,
+                80,
+                "https://images.unsplash.com/photo-1550572017-edd951aa8ca2"
+            ),
+            (
+                "Cetirizine",
+                "Allergy",
+                45,
+                70,
+                "https://images.unsplash.com/photo-1587854692152-cbe660dbde88"
+            ),
+            (
+                "Cough Syrup",
+                "Cold and Cough",
+                95,
+                60,
+                "https://images.unsplash.com/photo-1603398938378-e54eab446dde"
+            ),
+            (
+                "Multivitamin",
+                "Vitamins",
+                180,
+                50,
+                "https://images.unsplash.com/photo-1550572017-edd951aa8ca2"
+            ),
+            (
+                "First Aid Cream",
+                "First Aid",
+                85,
+                40,
+                "https://images.unsplash.com/photo-1603398938378-e54eab446dde"
+            )
+        ]
+        cur.executemany(
+            """
+            INSERT INTO medicines
+            (name,category,price,stock,image)
+            VALUES (?,?,?,?,?)
+            """,
+            products
+        )
+    con.commit()
+    con.close()
+def password_hash(password):
+    return hashlib.sha256(
+        password.encode()
+    ).hexdigest()
+def login_user(email, password):
+    con = db()
+    user = con.execute(
+        """
+        SELECT id,name,email,role
+        FROM users
+        WHERE email=? AND password=?
+        """,
+        (
+            email.lower(),
+            password_hash(password)
+        )
+    ).fetchone()
+    con.close()
+    return user
+def register_user(name, email, password):
+    try:
+        con = db()
+        con.execute(
+            """
+            INSERT INTO users
+            (name,email,password,role)
+            VALUES (?,?,?,?)
+            """,
+            (
+                name,
+                email.lower(),
+                password_hash(password),
+                "customer"
+            )
+        )
+        con.commit()
+        con.close()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+setup()
+@ui.page("/")
+def home():
+    login_page()
+@ui.page("/register")
+def register_page():
+    with ui.column().classes(
+        "w-full min-h-screen items-center justify-center bg-blue-50"
+    ):
+        with ui.card().classes("w-96 p-8 shadow-xl"):
+            ui.label(
+                "MediCare Pharmacy"
+            ).classes(
+                "text-3xl font-bold text-blue-700"
+            )
+            ui.label(
+                "Create Customer Account"
+            ).classes("text-xl")
+            name = ui.input(
+                "Full Name"
+            ).classes("w-full")
+            email = ui.input(
+                "Email"
+            ).classes("w-full")
+            password = ui.input(
+                "Password",
+                password=True
+            ).classes("w-full")
+            def create_account():
+                if register_user(
+                    name.value,
+                    email.value,
+                    password.value
+                ):
+                    ui.notify(
+                        "Account created successfully"
+                    )
+                    ui.navigate.to("/")
                 else:
-                    customer_screen()
-            else:
-                ui.notify(
-                    "Invalid email or password",
-                    type="negative"
+                    ui.notify(
+                        "Email already exists",
+                        type="negative"
+                    )
+            ui.button(
+                "Register",
+                on_click=create_account
+            ).classes(
+                "w-full bg-blue-700 text-white"
+            )
+            ui.button(
+                "Back to Login",
+                on_click=lambda: ui.navigate.to("/")
+            ).classes("w-full")
+def login_page():
+    with ui.column().classes(
+        "w-full min-h-screen items-center justify-center bg-blue-50"
+    ):
+        with ui.card().classes(
+            "w-96 p-8 shadow-xl"
+        ):
+            ui.label(
+                "MediCare Pharmacy"
+            ).classes(
+                "text-4xl font-bold text-blue-700"
+            )
+            ui.label(
+                "Online Pharmacy Platform"
+            ).classes(
+                "text-lg text-gray-600"
+            )
+            email = ui.input(
+                "Email"
+            ).classes("w-full")
+            password = ui.input(
+                "Password",
+                password=True
+            ).classes("w-full")
+            def do_login():
+                user = login_user(
+                    email.value,
+                    password.value
                 )
-        ui.button(
-            "Login",
-            on_click=do_login
-        )
-        ui.button(
-            "Create Account",
-            on_click=register_screen
-        )
-        def register_screen():
-    clear_page()
-    with page:
-        ui.label("Create Customer Account").classes(
-            "text-3xl font-bold"
-        )
-        name = ui.input("Name").classes("w-80")
-        email = ui.input("Email").classes("w-80")
-        password = ui.input(
-            "Password",
-            password=True
-        ).classes("w-80")
-        def save():
-            if register(
-                name.value,
-                email.value,
-                password.value
-            ):
-                ui.notify("Account created successfully")
-                login_screen()
-            else:
-                ui.notify(
-                    "Email already exists",
-                    type="negative"
+                if user:
+                    if user[3] == "admin":
+                        ui.navigate.to("/admin")
+                    else:
+                        ui.navigate.to("/customer")
+                else:
+                    ui.notify(
+                        "Invalid email or password",
+                        type="negative"
+                    )
+            ui.button(
+                "LOGIN",
+                on_click=do_login
+            ).classes(
+                "w-full bg-blue-700 text-white"
+            )
+            ui.button(
+                "CREATE ACCOUNT",
+                on_click=lambda: ui.navigate.to(
+                    "/register"
                 )
-        ui.button(
-            "Register",
-            on_click=save
-        )
-        ui.button(
-            "Back",
-            on_click=login_screen
-        )
-        def customer_screen():
-    clear_page()
-    with page:
-        ui.label("Customer Dashboard").classes(
-            "text-3xl font-bold"
+            ).classes("w-full")
+            ui.separator()
+            ui.label("Admin Login").classes(
+                "font-bold"
+            )
+            ui.label("admin@pharmacy.com")
+            ui.label("Password: admin123")
+@ui.page("/customer")
+def customer_page():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "MediCare Pharmacy"
+        ).classes(
+            "text-4xl font-bold text-blue-700"
         )
         ui.label(
-            "Welcome " + current_user["name"]
-        ).classes("text-xl")
-        ui.button(
-            "Browse Medicines",
-            on_click=medicine_screen
+            "Customer Dashboard"
+        ).classes(
+            "text-2xl font-bold"
         )
-        ui.button(
-            "View Cart",
-            on_click=cart_screen
+        with ui.row().classes("gap-6 mt-8"):
+            with ui.card().classes("w-72 p-6"):
+                ui.label(
+                    "Medicine Store"
+                ).classes(
+                    "text-xl font-bold"
+                )
+                ui.label(
+                    "Search and purchase medicines."
+                )
+                ui.button(
+                    "Browse Medicines",
+                    on_click=lambda: ui.navigate.to(
+                        "/medicines"
+                    )
+                )
+            with ui.card().classes("w-72 p-6"):
+                ui.label(
+                    "My Orders"
+                ).classes(
+                    "text-xl font-bold"
+                )
+                ui.button(
+                    "View Orders",
+                    on_click=lambda: ui.navigate.to(
+                        "/orders"
+                    )
+                )
+@ui.page("/medicines")
+def medicines_page():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "Medicine Store"
+        ).classes(
+            "text-4xl font-bold text-blue-700"
         )
-        ui.button(
-            "My Orders",
-            on_click=orders_screen
+        search = ui.input(
+            "Search medicine or category"
+        ).classes("w-full max-w-xl")
+
+        products = ui.row().classes(
+            "w-full flex-wrap gap-6 mt-6"
         )
-        ui.button(
-            "Logout",
-            on_click=login_screen
-        )
-        def medicine_screen():
-    clear_page()
-    with page:
-        ui.label("Available Medicines").classes(
-            "text-3xl font-bold"
-        )
-        search = ui.input("Search Medicine")
-        medicines_area = ui.column()
-        def load_medicines():
-            medicines_area.clear()
-            with medicines_area:
-                for medicine in medicines(search.value or ""):
-                    with ui.row().classes("items-center"):
+        def show_products():
+            products.clear()
+            con = db()
+            if search.value:
+                rows = con.execute(
+                    """
+                    SELECT * FROM medicines
+                    WHERE name LIKE ?
+                    OR category LIKE ?
+                    """,
+                    (
+                        "%" + search.value + "%",
+                        "%" + search.value + "%"
+                    )
+                ).fetchall()
+            else:
+                rows = con.execute(
+                    "SELECT * FROM medicines"
+                ).fetchall()
+            con.close()
+            with products:
+                for product in rows:
+                    with ui.card().classes(
+                        "w-72 p-4 shadow-xl"
+                    ):
+                        ui.image(
+                            product[5]
+                        ).classes(
+                            "w-full h-40 object-cover rounded-lg"
+                        )
+
                         ui.label(
-                            f'{medicine["name"]} | '
-                            f'{medicine["category"]} | '
-                            f'₹{medicine["price"]} | '
-                            f'Stock: {medicine["stock"]}'
+                            product[1]
+                        ).classes(
+                            "text-xl font-bold"
+                        )
+                        ui.label(
+                            product[2]
+                        ).classes(
+                            "text-blue-600"
+                        )
+                        ui.label(
+                            "₹" + str(product[3])
+                        ).classes(
+                            "text-xl font-bold text-green-700"
+                        )
+                        ui.label(
+                            "Stock: " + str(product[4])
                         )
                         ui.button(
-                            "Add",
-                            on_click=lambda m=medicine:
-                            add_cart(m["id"])
+                            "Add to Cart"
+                        ).classes(
+                            "w-full bg-blue-700 text-white"
                         )
         ui.button(
-            "Search",
-            on_click=load_medicines
+            "SEARCH",
+            on_click=show_products
         )
-        load_medicines()
+        show_products()
         ui.button(
             "Back",
-            on_click=customer_screen
-        )
-        def add_cart(medicine_id):
-    cart[medicine_id] = cart.get(
-        medicine_id,
-        0
-    ) + 1
-    ui.notify("Medicine added to cart")
-def cart_screen():
-    clear_page()
-    with page:
-        ui.label("Shopping Cart").classes(
-            "text-3xl font-bold"
-        )
-        if not cart:
-            ui.label("Cart is empty")
-        else:
-            total = 0
-            for medicine_id, quantity in cart.items():
-                for medicine in medicines():
-                    if medicine["id"] == medicine_id:
-                        amount = (
-                            medicine["price"] *
-                            quantity
-                        )
-                        total += amount
-                        ui.label(
-                            f'{medicine["name"]} x '
-                            f'{quantity} = ₹{amount}'
-                        )
-                        def add_cart(medicine_id):
-    cart[medicine_id] = cart.get(
-        medicine_id,
-        0
-    ) + 1
-    ui.notify("Medicine added to cart")
-def cart_screen():
-    clear_page()
-    with page:
-        ui.label("Shopping Cart").classes(
-            "text-3xl font-bold"
-        )
-        if not cart:
-            ui.label("Cart is empty")
-        else:
-            total = 0
-            for medicine_id, quantity in cart.items():
-                for medicine in medicines():
-                    if medicine["id"] == medicine_id:
-                        amount = (
-                            medicine["price"] *
-                            quantity
-                        )
-                        total += amount
-                        ui.label(
-                            f'{medicine["name"]} x '
-                            f'{quantity} = ₹{amount}'
-                        )
-                        def add_cart(medicine_id):
-    cart[medicine_id] = cart.get(
-        medicine_id,
-        0
-    ) + 1
-    ui.notify("Medicine added to cart")
-def cart_screen():
-    clear_page()
-    with page:
-        ui.label("Shopping Cart").classes(
-            "text-3xl font-bold"
-        )
-        if not cart:
-            ui.label("Cart is empty")
-        else:
-            total = 0
-            for medicine_id, quantity in cart.items():
-                for medicine in medicines():
-                    if medicine["id"] == medicine_id:
-                        amount = (
-                            medicine["price"] *
-                            quantity
-                        )
-                        total += amount
-                        ui.label(
-                            f'{medicine["name"]} x '
-                            f'{quantity} = ₹{amount}'
-                        )
-                        def admin_medicines():
-    clear_page()
-    with page:
-        ui.label("Medicine Management").classes(
-            "text-3xl font-bold"
-        )
-        name = ui.input("Medicine Name")
-        category = ui.input("Category")
-        price = ui.number("Price")
-        stock = ui.number("Stock")
-        def save():
-            add_medicine(
-                name.value,
-                category.value,
-                price.value,
-                stock.value
+            on_click=lambda: ui.navigate.to(
+                "/customer"
             )
-            ui.notify("Medicine added")
-            admin_medicines()
+        )
+@ui.page("/orders")
+def orders_page():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "My Orders"
+        ).classes(
+            "text-3xl font-bold text-blue-700"
+        )
+        ui.label(
+            "No orders placed yet."
+        ).classes(
+            "text-xl text-gray-600"
+        )
         ui.button(
-            "Add Medicine",
+            "Browse Medicines",
+            on_click=lambda: ui.navigate.to(
+                "/medicines"
+            )
+        )
+@ui.page("/admin")
+def admin_page():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "MediCare Admin Dashboard"
+        ).classes(
+            "text-4xl font-bold text-blue-700"
+        )
+        ui.label(
+            "Administrator Panel"
+        ).classes("text-xl")
+        with ui.row().classes("gap-6 mt-8"):
+            with ui.card().classes("w-72 p-6"):
+                ui.label(
+                    "Medicine Management"
+                ).classes(
+                    "text-xl font-bold"
+                )
+                ui.button(
+                    "Manage Medicines",
+                    on_click=lambda: ui.navigate.to(
+                        "/admin/medicines"
+                    )
+                )
+            with ui.card().classes("w-72 p-6"):
+                ui.label(
+                    "Customer Orders"
+                ).classes(
+                    "text-xl font-bold"
+                )
+                ui.button(
+                    "View Orders",
+                    on_click=lambda: ui.navigate.to(
+                        "/admin/orders"
+                    )
+                )
+@ui.page("/admin/medicines")
+def admin_medicines():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "Medicine Management"
+        ).classes(
+            "text-3xl font-bold text-blue-700"
+        )
+        name = ui.input(
+            "Medicine Name"
+        )
+        category = ui.input(
+            "Category"
+        )
+        price = ui.number(
+            "Price"
+        )
+        stock = ui.number(
+            "Stock"
+        )
+        image = ui.input(
+            "Product Image URL"
+        )
+        def save():
+            con = db()
+            con.execute(
+                """
+                INSERT INTO medicines
+                (name,category,price,stock,image)
+                VALUES (?,?,?,?,?)
+                """,
+                (
+                    name.value,
+                    category.value,
+                    price.value,
+                    stock.value,
+                    image.value
+                )
+            )
+            con.commit()
+            con.close()
+            ui.notify(
+                "Medicine added successfully"
+            )
+        ui.button(
+            "ADD MEDICINE",
             on_click=save
         )
-        for medicine in medicines():
+        ui.label(
+            "Existing Products"
+        ).classes(
+            "text-2xl font-bold mt-8"
+        )
+        con = db()
+        rows = con.execute(
+            "SELECT name,category,price,stock FROM medicines"
+        ).fetchall()
+        con.close()
+        for product in rows:
             ui.label(
-                f'{medicine["id"]}. '
-                f'{medicine["name"]} '
-                f'(Stock: {medicine["stock"]})'
+                product[0] +
+                " | " +
+                product[1] +
+                " | ₹" +
+                str(product[2]) +
+                " | Stock: " +
+                str(product[3])
             )
-        ui.button(
-            "Back",
-            on_click=admin_screen
+@ui.page("/admin/orders")
+def admin_orders():
+    with ui.column().classes(
+        "w-full min-h-screen bg-gray-100 p-8"
+    ):
+        ui.label(
+            "Customer Orders"
+        ).classes(
+            "text-3xl font-bold text-blue-700"
         )
-        def admin_orders():
-    clear_page()
-    with page:
-        ui.label("Customer Orders").classes(
-            "text-3xl font-bold"
-        )
-        orders = all_orders()
-        if not orders:
-            ui.label("No orders found")
-        for order in orders:
+        con = db()
+        rows = con.execute(
+            "SELECT * FROM orders"
+        ).fetchall()
+        con.close()
+        if not rows:
             ui.label(
-                f'Order {order["id"]} | '
-                f'{order["name"]} | '
-                f'{order["email"]} | '
-                f'₹{order["total"]} | '
-                f'{order["status"]}'
+                "No customer orders yet."
             )
-        ui.button(
-            "Back",
-            on_click=admin_screen
-        )
-login_screen()
 ui.run(
     host="127.0.0.1",
-    port=8080,
-    title="Online Pharmacy Platform"
+    port=8081,
+    title="MediCare Online Pharmacy",
+    reload=False
 )
