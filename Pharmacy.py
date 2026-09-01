@@ -21,3 +21,26 @@ def medicines(search=""):
         }
         for r in rows
     ]
+def add_medicine(name, category, price, stock):
+    db = connect()
+    db.execute(
+        "INSERT INTO medicines (name,category,price,stock) VALUES (?,?,?,?)",
+        (name, category, price, stock)
+    )
+    db.commit()
+    db.close()
+
+def place_order(user_id, cart):
+    db = connect()
+    cur = db.cursor()
+    total = 0
+    for medicine_id, quantity in cart.items():
+        cur.execute(
+            "SELECT price,stock FROM medicines WHERE id=?",
+            (medicine_id,)
+        )
+        row = cur.fetchone()
+        if not row or row[1] < quantity:
+            db.close()
+            return False
+        total += row[0] * quantity
