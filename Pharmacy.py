@@ -43,4 +43,24 @@ def place_order(user_id, cart):
         if not row or row[1] < quantity:
             db.close()
             return False
-        total += row[0] * quantity
+        total += row[0] * quantitycur.execute(
+        "INSERT INTO orders (user_id,total,status) VALUES (?,?,?)",
+        (user_id, total, "Placed")
+    )
+    order_id = cur.lastrowid
+    for medicine_id, quantity in cart.items():
+        cur.execute(
+            "INSERT INTO order_items (order_id,medicine_id,quantity) VALUES (?,?,?)",
+            (order_id, medicine_id, quantity)
+        )
+        cur.execute(
+            "UPDATE medicines SET stock=stock-? WHERE id=?",
+            (quantity, medicine_id)
+        )
+    db.commit()
+    db.close()
+    return True
+
+def customer_orders(user_id):
+    db = connect()
+    cur = db.cursor()
