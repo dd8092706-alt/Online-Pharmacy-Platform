@@ -64,3 +64,39 @@ def place_order(user_id, cart):
 def customer_orders(user_id):
     db = connect()
     cur = db.cursor()
+    cur.execute(
+        "SELECT id,total,status FROM orders WHERE user_id=?",
+        (user_id,)
+    )
+    rows = cur.fetchall()
+    db.close()
+    return [
+        {
+            "id": r[0],
+            "total": r[1],
+            "status": r[2]
+        }
+        for r in rows
+    ]
+
+def all_orders():
+    db = connect()
+    cur = db.cursor()
+    cur.execute("""
+        SELECT orders.id, users.name, users.email,
+               orders.total, orders.status
+        FROM orders
+        JOIN users ON orders.user_id = users.id
+    """)
+    rows = cur.fetchall()
+    db.close()
+    return [
+        {
+            "id": r[0],
+            "name": r[1],
+            "email": r[2],
+            "total": r[3],
+            "status": r[4]
+        }
+        for r in rows
+    ]
