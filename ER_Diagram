@@ -1,1 +1,30 @@
-
+erDiagram
+    USERS ||--o{ ORDERS : places
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    MEDICINES ||--o{ ORDER_ITEMS : "ordered in"
+    USERS {
+        int id PK
+        string name
+        string email UK
+        string password
+        string role
+    }
+    ORDERS {
+        int id PK
+        int user_id FK
+        real total
+        string status
+    }
+    MEDICINES {
+        int id PK
+        string name
+        string category
+        real price
+        int stock
+    }
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int medicine_id FK
+        int quantity
+    }
