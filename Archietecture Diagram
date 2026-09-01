@@ -1,4 +1,4 @@
-flowchart TD
+flowchart ID
     subgraph Client["Client Layer"]
         Browser["Web Browser<br/>(renders NiceGUI frontend)"]
     end
