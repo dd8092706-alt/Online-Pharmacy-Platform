@@ -1,1 +1,26 @@
 
+flowchart LR
+    Customer([Customer])
+    Admin([Admin])
+    subgraph System["Online Pharmacy Platform (NiceGUI System)"]
+        UC1["Browse / Search Medicines<br/>(pharmacy.py)"]
+        UC2["Add to Cart & Checkout<br/>(app.py, pharmacy.py)"]
+        UC3["View My Orders<br/>(pharmacy.py)"]
+        UC4["Register / Login<br/>(login.py)"]
+        UC5["Manage Medicines (Add/View)<br/>(pharmacy.py)"]
+        UC6["View All Customer Orders<br/>(pharmacy.py)"]
+    end
+    DB[(SQLite Database<br/>pharmacy.db)]
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Customer --> UC4
+    Admin --> UC4
+    Admin --> UC5
+    Admin --> UC6
+    UC1 -.-> DB
+    UC2 -.-> DB
+    UC3 -.-> DB
+    UC4 -.-> DB
+    UC5 -.-> DB
+    UC6 -.-> DB
