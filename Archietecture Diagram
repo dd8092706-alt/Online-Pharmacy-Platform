@@ -1,1 +1,23 @@
-
+flowchart TD
+    subgraph Client["Client Layer"]
+        Browser["Web Browser<br/>(renders NiceGUI frontend)"]
+    end
+    subgraph Presentation["Presentation Layer (NiceGUI)"]
+        AppPy["app.py<br/>Login / Register / Customer /<br/>Admin screens, Cart"]
+    end
+    subgraph Business["Business Logic Layer"]
+        LoginPy["login.py<br/>register()<br/>login()"]
+        PharmacyPy["pharmacy.py<br/>medicines()<br/>add_medicine()<br/>place_order()<br/>customer_orders()<br/>all_orders()"]
+    end
+    subgraph DataAccess["Data Access Layer"]
+        DatabasePy["database.py<br/>connect()<br/>setup_database()"]
+    end
+    subgraph Storage["Storage Layer"]
+        DB[("pharmacy.db<br/>(users, medicines, orders, order_items)")]
+    end
+    Browser -->|"HTTP (localhost:8080)"| AppPy
+    AppPy --> LoginPy
+    AppPy --> PharmacyPy
+    LoginPy --> DatabasePy
+    PharmacyPy --> DatabasePy
+    DatabasePy -->|"SQL (sqlite3)"| DB
